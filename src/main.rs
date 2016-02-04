@@ -87,9 +87,12 @@ impl Stack for ArrayStack {
     fn push(&mut self, ele: u32) {
         self.s[self.n] = Some(ele);
         self.n = self.n + 1;
+        assert!(self.n < N);
     }
     fn pop(&mut self) -> Option<u32> {
-        self.n = self.n - 1;
+        if self.n != 0 {
+            self.n = self.n - 1;
+        }
         let out = self.s[self.n];
         out
     }
@@ -98,14 +101,12 @@ impl Stack for ArrayStack {
     }
 }
 
-
-
 #[cfg(test)]
 mod test {
     use super::List;
     use super::Stack;
-    use super::ArrayStac;
-    fn push_pop<T: Stack>(s: T) {
+    use super::ArrayStack;
+    fn test_push_pop<T: Stack>(s: &mut T) {
         assert!(s.is_empty());
         assert_eq!(None, s.pop());
         s.push(1);
@@ -115,13 +116,19 @@ mod test {
         assert_eq!(Some(2), s.pop());
         assert_eq!(Some(1), s.pop());
         assert!(s.is_empty());
+        for i in 0..15 {
+            s.push(i);
+        }
     }
     #[test]
-    fn stack_impls() {
+    fn list_stack() {
         let mut list_stack = List::new();
-        test_push_pop(ls);
+        test_push_pop(&mut list_stack);
+    }
+    #[test]
+    fn array_stack() {
         let mut array_stack = ArrayStack::new();
-        test_push_pop(ls);
+        test_push_pop(&mut array_stack);
     }
 }
 
