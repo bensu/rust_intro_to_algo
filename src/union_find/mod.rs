@@ -6,6 +6,7 @@
 /* Could probably do it with traits, but I don't know how to make a
  * struct that has size known at runtime, but passed from somewhere
  * else
+ * -> Change code to take size at run time (with Vec)
  */
 
 extern crate rand; // used for testing
