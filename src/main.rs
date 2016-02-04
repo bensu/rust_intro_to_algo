@@ -18,7 +18,7 @@ use std::fmt;
  * the upper squares to be connected to one of the lower squares?
  */
 
-const L: usize = 4;
+const L: usize = 20;
 
 #[derive(Copy, Clone)]
 enum Square {
@@ -26,6 +26,12 @@ enum Square {
     Black,
 }
 
+fn is_white(sq: Square) -> bool {
+    match sq {
+        Square::White => true,
+        Square::Black => false,
+    }
+}
 impl fmt::Debug for Square {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
@@ -124,7 +130,30 @@ fn coord_to_idx(coords: &Coords) -> usize {
     out
 }
 
+fn set_sym_white(grid: &mut Grid, sets: &mut Sets, coords: &Coords) {
+    // Ensures the Grid and the Sets are mutated in sync
+    set_white(grid, &coords);
+    let idx = coord_to_idx(&coords);
+    for d in DIRS.iter() {
+        let d_coords = neighbour(&coords, d);
+        match get_color(&grid, &d_coords) {
+            Square::White => pc_quick_union::union(sets, idx, coord_to_idx(&d_coords)),
+            Square::Black => ()
+        }
+    }
+}
+
+fn non_white_coords(grid: &Grid) -> Coords {
+    let mut coords = Coords(random_upto(L), random_upto(L));
+    while is_white(get_color(grid, &coords)) {
+        coords = Coords(random_upto(L), random_upto(L));
+    }
+    coords
+}
+
 fn percolates(grid: &Grid, sets: &mut Sets) -> bool {
+    // Checks if any of the top squares is connected to any of
+    // the lower squares by following a white path (no diagonals).
     let mut out = false;
     for i in 0..L {
         let top_coords = Coords(0, i);
@@ -154,36 +183,40 @@ type Sets = [Node; (L * L)];
 
 // Helper
 fn random_upto(n: usize) -> usize {
+    // Random usize between 0 and n
     let out = random::<usize>() % n;
     assert!(out < n);
     out
 }
 
-fn main() {
+fn sym() -> usize {
     /* We will build the sets and the grid simultaneously and stop
-     * when it percolates
+     * when it percolates, returning how many white squares it took
      */
 
     // Start empty set
     let mut sets: Sets = [Node::Root(1); (L * L)];
-
     // Make grid
     let mut grid: Grid = Grid { rows: [Row { sqs: [Square::Black; L]}; L] };
 
-    const N: usize = 10; // Number of white squares (to be changed)
-    for i in 0..N {
-        let coords = Coords(random_upto(L), random_upto(L));
-        let idx = coord_to_idx(&coords);
-        set_white(&mut grid, &coords);
-        for d in DIRS.iter() {
-            let d_coords = neighbour(&coords, d);
-            match get_color(&grid, &d_coords) {
-                Square::White => pc_quick_union::union(&mut sets, idx, coord_to_idx(&d_coords)),
-                Square::Black => ()
-            }
-        }
+    let mut done = false;
+    let mut i: usize = 0;
+    while !done {
+        let coords = non_white_coords(&grid);
+        set_sym_white(&mut grid, &mut sets, &coords);
+        let perco = percolates(&grid, &mut sets);
+        done = perco || (i == L * L);
+        i = i + 1;
     }
-    println!("{:?}", percolates(&grid, &mut sets));
-    println!("{:?}",grid);
+    i
+}
 
+fn main() {
+    const N: usize = 1000; // number of simulations
+    let mut sum: usize = 0;
+    for i in 0..N {
+        sum = sum + sym();
+    }
+    // Probably missing decimals in the int to float casting
+    println!("The average proportion of white squares for percolation is {}", (sum as f64)/((N * L * L) as f64));
 }
