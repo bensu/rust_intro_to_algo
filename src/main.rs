@@ -57,6 +57,7 @@ mod quick_union {
      * tree. When querying, traverse each tree and find if both have
      * the same root
     */
+    // Since root is O(n), everything else is O(n)
     fn root(sets: & [usize], node: usize) -> usize {
         // Check the root by traversing the tree.
         // The longest possible tree is N -> O(n)
@@ -73,6 +74,47 @@ mod quick_union {
         root(sets,from) == root(sets,to)
     }
 }
+
+mod b_quick_union {
+    /* To prevent the trees from growing deep, we *balance* them:
+     * whenever we join to trees, add the shallow one under the deep
+     * one. Then the tree depth only increases (by one) if the both
+     * trees have the same depth.
+     * Now roots has lg(N) speed, since that is the depth of weighted trees.
+     */
+    #[derive(Debug, Copy, Clone)]
+    pub enum Node {
+        Root(u32),
+        Leaf(usize),
+    }
+    fn root(sets: &[Node], n: usize) -> (usize, u32) {
+        // O(lg(n)) since the trees are weighted
+        match sets[n] {
+            Node::Root(x) => (n, x),
+            Node::Leaf(r) => root(sets, r),
+        }
+    }
+    pub fn union(sets: &mut [Node], from: usize, to: usize) {
+        // O(lg(n)) since it depends on root
+        let (from_root, from_weight) = root(sets, from);
+        let (to_root, to_weight) = root(sets, to);
+        // Add the shallow one to the deeper one
+        if from_weight < to_weight {
+            sets[from] = Node::Leaf(to_root);
+        } else if from_weight == to_weight {
+            // if equal, increase the weight
+            sets[to_root] = Node::Root(to_weight + 1);
+            sets[from_root] = Node::Leaf(to_root);
+        } else {
+            sets[to_root] = Node::Leaf(from_root);
+        }
+    }
+    pub fn connected(sets: &[Node], from: usize, to: usize) -> bool {
+        // O(lg(n)) since it depends on root
+        root(sets,from) == root(sets,to)
+    }
+}
+// Helpers
 
 fn random_upto(n: usize) -> usize {
     random::<usize>() % n
@@ -95,6 +137,8 @@ fn main() {
     let mut union_sets: [usize; L] = [0; L];
     start_sets(&mut union_sets);
 
+    let mut balanced_sets: [b_quick_union::Node; L] = [b_quick_union::Node::Root(1); L];
+
     let mut unions: [(usize, usize); UNIONS] = [(0,0); UNIONS];
     for i in 0..UNIONS {
         unions[i] = (random_upto(L), random_upto(L));
@@ -105,17 +149,20 @@ fn main() {
         let (from,to) = unions[i];
         quick_find::union(&mut find_sets, from, to);
         quick_union::union(&mut union_sets, from, to);
+        b_quick_union::union(&mut balanced_sets, from, to);
     }
 
     println!("The unions are: {:?}", unions);
     println!("The quick_find sets are: {:?}", find_sets);
     println!("The quick_union sets are: {:?}", union_sets);
+    println!("The balanced sets are: {:?}", balanced_sets);
 
     // Test
     for i in 0..UNIONS {
         let (from,to) = unions[i];
         assert!(quick_find::connected(&find_sets, from, to));
         assert!(quick_union::connected(&union_sets, from, to));
+        assert!(b_quick_union::connected(&balanced_sets, from, to));
     }
 
 }
