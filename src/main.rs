@@ -76,6 +76,7 @@ mod quick_union {
 }
 
 mod b_quick_union {
+    #![allow(dead_code)]
     /* To prevent the trees from growing deep, we *balance* them:
      * whenever we join to trees, add the shallow one under the deep
      * one. Then the tree depth only increases (by one) if the both
@@ -137,15 +138,12 @@ fn main() {
     let mut union_sets: [usize; L] = [0; L];
     start_sets(&mut union_sets);
 
-    let mut balanced_sets: [b_quick_union::Node; L] = [b_quick_union::Node::Root(1); L];
+    // let mut balanced_sets: [b_quick_union::Node; L] = [b_quick_union::Node::Root(1); L];
 
     let mut unions: [(usize, usize); UNIONS] = [(0,0); UNIONS];
     for i in 0..UNIONS {
         let from = random_upto(L);
-        let mut to = random_upto(L);
-        while from == to {
-            to = random_upto(L);
-        }
+        let to = random_upto(L);
         unions[i] = (from, to);
     }
 
@@ -154,20 +152,20 @@ fn main() {
         let (from,to) = unions[i];
         quick_find::union(&mut find_sets, from, to);
         quick_union::union(&mut union_sets, from, to);
-        b_quick_union::union(&mut balanced_sets, from, to);
+        // b_quick_union::union(&mut balanced_sets, from, to);
     }
 
     println!("The unions are: {:?}", unions);
     println!("The quick_find sets are: {:?}", find_sets);
     println!("The quick_union sets are: {:?}", union_sets);
-    println!("The balanced sets are: {:?}", balanced_sets);
+    // println!("The balanced sets are: {:?}", balanced_sets);
 
     // Test
     for i in 0..UNIONS {
         let (from,to) = unions[i];
         assert!(quick_find::connected(&find_sets, from, to));
         assert!(quick_union::connected(&union_sets, from, to));
-        assert!(b_quick_union::connected(&balanced_sets, from, to));
+        // assert!(b_quick_union::connected(&balanced_sets, from, to));
     }
 
 }
