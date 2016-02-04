@@ -1,7 +1,7 @@
 extern crate rand;
 use rand::random;
 
-mod union_find {
+mod quick_find {
     /* Implements disjoints sets through Union Find
      * Each index of the sets array maps onto an object in the graph.
      * The user can specify if two objects (a & b) are connected by
@@ -18,15 +18,15 @@ mod union_find {
      * value to the others
      */
     pub fn connected(sets: &[usize], from: usize, to: usize) -> bool {
-        // Checks if two elements are connected.
+        // Checks if two elements are connected; O(1)
         sets[from] == sets[to]
     }
 
     pub fn union(sets: &mut [usize], from: usize, to: usize) {
-        // Joins two elements
+        // Joins two elements; O(n)
         let from_root = sets[from];
         let to_root = sets[to];
-        // change all that have from_root to to_root
+        // change all that have from_root to to_root in O(n)
         for i in 0..sets.len() {
             if sets[i] == from_root {
                 sets[i] = to_root;
@@ -34,21 +34,43 @@ mod union_find {
         }
     }
 
-    pub fn show_sets(sets: &[usize]) {
-        // Prints the grouped sets
-        let mut idxs: Vec<Vec<usize>> = Vec::new();
-        for i in 0..sets.len() {
-            idxs.push(Vec::new());
-        }
+    // WIP
+    // pub fn show_sets(sets: &[usize]) {
+    //     // Prints the grouped sets
+    //     let mut idxs: Vec<Vec<usize>> = Vec::new();
+    //     for i in 0..sets.len() {
+    //         idxs.push(Vec::new());
+    //     }
+    //     for (i,val) in sets.iter().enumerate() {
+    //         match idxs.get(*val) {
+    //             Some(ref xs) => (*xs).push(i),
+    //             None => (),
+    //         }
+    //     }
+    //     println!("{:?}", idxs);
+    // }
+}
 
-
-        for (i,val) in sets.iter().enumerate() {
-            match idxs.get(*val) {
-                Some(ref xs) => (*xs).push(i),
-                None => (),
-            }
+mod quick_union {
+    /* Quick Find is too slow (O(n)) for union. Instead of changing
+     * all the set's indexes on union, change only one, forming a
+     * tree. When querying, traverse each tree and find if both have
+     * the same root
+    */
+    fn root(sets: & [usize], node: usize) -> usize {
+        // Check the root by traversing the tree.
+        // The longest possible tree is N -> O(n)
+        if sets[node] != node {
+            root(sets, sets[node])
+        } else {
+            node
         }
-        println!("{:?}", idxs);
+    }
+    pub fn union(sets: &mut [usize], from: usize, to: usize) {
+        sets[root(sets,from)] = root(sets,to);
+    }
+    pub fn connected(sets: &[usize], from: usize, to: usize) -> bool {
+        root(sets,from) == root(sets,to)
     }
 }
 
@@ -56,15 +78,22 @@ fn random_upto(n: usize) -> usize {
     random::<usize>() % n
 }
 
+fn start_sets(sets: &mut [usize]) {
+    for i in 0..sets.len() {
+        sets[i] = i;
+    }
+}
+
 fn main() {
 
     const L: usize = 10;
     const UNIONS: usize = 4;
 
-    let mut sets: [usize; L] = [0; L];
-    for i in 0..L {
-        sets[i] = i;
-    }
+    let mut find_sets: [usize; L] = [0; L];
+    start_sets(&mut find_sets);
+
+    let mut union_sets: [usize; L] = [0; L];
+    start_sets(&mut union_sets);
 
     let mut unions: [(usize, usize); UNIONS] = [(0,0); UNIONS];
     for i in 0..UNIONS {
@@ -74,17 +103,19 @@ fn main() {
     // logic for Union Find
     for i in 0..UNIONS {
         let (from,to) = unions[i];
-        union_find::union(&mut sets, from, to);
+        quick_find::union(&mut find_sets, from, to);
+        quick_union::union(&mut union_sets, from, to);
     }
 
     println!("The unions are: {:?}", unions);
-    println!("The sets are:");
-    union_find::show_sets(&sets);
+    println!("The quick_find sets are: {:?}", find_sets);
+    println!("The quick_union sets are: {:?}", union_sets);
 
-    // test
+    // Test
     for i in 0..UNIONS {
         let (from,to) = unions[i];
-        assert!(union_find::connected(&sets, from, to));
+        assert!(quick_find::connected(&find_sets, from, to));
+        assert!(quick_union::connected(&union_sets, from, to));
     }
 
 }
