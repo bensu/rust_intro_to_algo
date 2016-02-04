@@ -129,7 +129,7 @@ fn start_sets(sets: &mut [usize]) {
 fn main() {
 
     const L: usize = 10;
-    const UNIONS: usize = 4;
+    const UNIONS: usize = 5;
 
     let mut find_sets: [usize; L] = [0; L];
     start_sets(&mut find_sets);
@@ -141,7 +141,12 @@ fn main() {
 
     let mut unions: [(usize, usize); UNIONS] = [(0,0); UNIONS];
     for i in 0..UNIONS {
-        unions[i] = (random_upto(L), random_upto(L));
+        let from = random_upto(L);
+        let mut to = random_upto(L);
+        while from == to {
+            to = random_upto(L);
+        }
+        unions[i] = (from, to);
     }
 
     // logic for Union Find
