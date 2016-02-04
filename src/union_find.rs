@@ -11,6 +11,7 @@
 extern crate rand; // used for testing
 
 pub mod quick_find {
+    #![allow(dead_code)]
     /* Implements disjoints sets through Union Find
      * Each index of the sets array maps onto an object in the graph.
      * The user can specify if two objects (a & b) are connected by
@@ -61,6 +62,7 @@ pub mod quick_find {
 }
 
 pub mod quick_union {
+    #![allow(dead_code)]
     /* Quick Find is too slow (O(n)) for union. Instead of changing
      * all the set's indexes on union, change only one, forming a
      * tree. When querying, traverse each tree and find if both have
@@ -211,7 +213,6 @@ pub mod test {
         let mut balanced_sets: [Node; L] = [Node::Root(1); L];
 
         let mut compressed_sets: [Node; L] = [Node::Root(1); L];
-
 
         let mut unions: [(usize, usize); UNIONS] = [(0,0); UNIONS];
         for i in 0..UNIONS {
