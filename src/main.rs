@@ -1,6 +1,9 @@
 // mod union_find;
 // use union_find::*;
 
+extern crate rand; // used for testing
+use rand::random;
+
 use std::fmt;
 
 // Monte Carlo
@@ -12,7 +15,7 @@ use std::fmt;
  * the upper squares to be connected to one of the lower squares?
  */
 
-const N: usize = 4;
+const L: usize = 4;
 
 #[derive(Copy, Clone)]
 enum Square {
@@ -31,7 +34,7 @@ impl fmt::Debug for Square {
 
 #[derive(Copy, Clone)]
 struct Row {
-    sqs: [Square; N],
+    sqs: [Square; L],
 }
 
 impl fmt::Debug for Row {
@@ -46,7 +49,7 @@ impl fmt::Debug for Row {
 
 #[derive(Copy, Clone)]
 struct Grid {
-    rows: [Row; N],
+    rows: [Row; L],
 }
 
 impl fmt::Debug for Grid {
@@ -62,8 +65,26 @@ impl fmt::Debug for Grid {
     }
 }
 
+fn get_color(grid: Grid, n: usize, m: usize) -> Square {
+    assert!((n < L) & (m < L));
+    grid.rows[n].sqs[m]
+}
+
+fn set_white(grid: &mut Grid, n: usize, m: usize) {
+    grid.rows[n].sqs[m] = Square::White;
+}
+
+fn random_upto(n: usize) -> usize {
+    random::<usize>() % n
+}
+
+
 fn main() {
     // Make grid
-    let mut grid: Grid = Grid { rows: [Row { sqs: [Square::Black; N]}; N] };
+    let mut grid: Grid = Grid { rows: [Row { sqs: [Square::Black; L]}; L] };
+    const N: usize = 3; // Number of white squares
+    for i in 0..N {
+        set_white(&mut grid, random_upto(L), random_upto(L));
+    }
     println!("{:?}",grid);
 }
