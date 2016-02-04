@@ -123,6 +123,59 @@ mod b_quick_union {
         root(sets,from) == root(sets,to)
     }
 }
+
+mod pc_quick_union {
+    #![allow(dead_code)]
+    /* When we check for a node's root, we *compress the path* from
+     * the node to the root by setting the pointer directly and saving
+     * ourselves from future work.
+     */
+    #[derive(Debug, Copy, Clone)]
+    pub enum Node {
+        Root(u32),   // Roots contain the depth of their tree
+        Leaf(usize), // Leafs point to some other Node
+    }
+    fn set_leaf(sets: &mut [Node], n: usize, r: usize) {
+        // Used to impose n != r preconditions
+        assert!(n != r);
+        sets[n] = Node::Leaf(r);
+    }
+    fn root(sets: &mut [Node], n: usize) -> (usize, u32) {
+        // O(lg(n)) since the trees are weighted
+        // The function is can not be Tail Call Optimized
+        match sets[n] {
+            Node::Root(x) => (n, x),
+            Node::Leaf(r) => {
+                let (r, d) = root(sets, r);
+                set_leaf(sets, n, r); // Compress the path
+                (r, d)
+            }
+        }
+    }
+    pub fn union(sets: &mut [Node], from: usize, to: usize) {
+        // O(lg(n)) since it depends on root
+        let (from_root, from_depth) = root(sets, from);
+        let (to_root, to_depth) = root(sets, to);
+        // guard agains infinite loop (& extra work)
+        if from_root != to_root {
+            // Add the shallow one to the deeper one
+            if from_depth < to_depth {
+                set_leaf(sets, from_root, to_root);
+            } else if from_depth == to_depth {
+                // if equal, increase the weight
+                sets[to_root] = Node::Root(to_depth + 1);
+                set_leaf(sets, from_root, to_root);
+            } else {
+                set_leaf(sets, to_root, from_root);
+            }
+        }
+    }
+    pub fn connected(sets: &mut [Node], from: usize, to: usize) -> bool {
+        // O(lg(n)) since it depends on root
+        root(sets,from) == root(sets,to)
+    }
+}
+
 // Helpers
 
 fn random_upto(n: usize) -> usize {
@@ -138,7 +191,7 @@ fn start_sets(sets: &mut [usize]) {
 fn main() {
 
     const L: usize = 10;
-    const UNIONS: usize = 5;
+    const UNIONS: usize = 9;
 
     let mut find_sets: [usize; L] = [0; L];
     start_sets(&mut find_sets);
@@ -147,6 +200,9 @@ fn main() {
     start_sets(&mut union_sets);
 
     let mut balanced_sets: [b_quick_union::Node; L] = [b_quick_union::Node::Root(1); L];
+
+    let mut compressed_sets: [pc_quick_union::Node; L] = [pc_quick_union::Node::Root(1); L];
+
 
     let mut unions: [(usize, usize); UNIONS] = [(0,0); UNIONS];
     for i in 0..UNIONS {
@@ -162,11 +218,13 @@ fn main() {
         quick_find::union(&mut find_sets, from, to);
         quick_union::union(&mut union_sets, from, to);
         b_quick_union::union(&mut balanced_sets, from, to);
+        pc_quick_union::union(&mut compressed_sets, from, to);
     }
 
     println!("The quick_find sets are: {:?}", find_sets);
     println!("The quick_union sets are: {:?}", union_sets);
     println!("The balanced sets are: {:?}", balanced_sets);
+    println!("The compressed sets are: {:?}", compressed_sets);
 
     // Test
     for i in 0..UNIONS {
@@ -174,6 +232,6 @@ fn main() {
         assert!(quick_find::connected(&find_sets, from, to));
         assert!(quick_union::connected(&union_sets, from, to));
         assert!(b_quick_union::connected(&balanced_sets, from, to));
+        assert!(pc_quick_union::connected(&mut compressed_sets, from, to));
     }
-
 }
