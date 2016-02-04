@@ -2,24 +2,21 @@ extern crate rand;
 
 use rand::random;
 
-const L: usize = 10;
-const UNIONS: usize = 4;
-
 fn random_upto(n: usize) -> usize {
     random::<usize>() % n
 }
 
-fn connected(sets: [usize; L], from: usize, to: usize) -> bool {
+fn connected(sets: &[usize], from: usize, to: usize) -> bool {
     // Checks if two elements are connected.
     sets[from] == sets[to]
 }
 
-fn union(sets: &mut [usize; L], from: usize, to: usize) {
+fn union(sets: &mut [usize], from: usize, to: usize) {
     // Joins two elements
     let from_root = sets[from];
     let to_root = sets[to];
     // change all that have from_root to to_root
-    for i in 0..L {
+    for i in 0..sets.len() {
         if sets[i] == from_root {
             sets[i] = to_root;
         }
@@ -27,6 +24,9 @@ fn union(sets: &mut [usize; L], from: usize, to: usize) {
 }
 
 fn main() {
+
+    const L: usize = 10;
+    const UNIONS: usize = 4;
 
     let mut sets: [usize; L] = [0; L];
     for i in 0..L {
@@ -47,7 +47,7 @@ fn main() {
     // test
     for i in 0..UNIONS {
         let (from,to) = unions[i];
-        println!("{}", connected(sets, from, to));
+        println!("{}", connected(&sets, from, to));
     }
 
     println!("{:?}", unions);
