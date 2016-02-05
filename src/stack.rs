@@ -1,26 +1,26 @@
 use std::mem;
 
-pub trait Stack {
-    fn push(&mut self, u32);
-    fn pop(&mut self) -> Option<u32>;
+pub trait Stack<T> {
+    fn push(&mut self, T);
+    fn pop(&mut self) -> Option<T>;
     fn is_empty(&self) -> bool;
 }
 
-pub struct List {
-    head: Link,
+pub struct List<T> {
+    head: Link<T>,
 }
 
-pub enum Link {
+pub enum Link<T> {
     Empty,
-    More(Box<Node>),
+    More(Box<Node<T>>),
 }
 
-pub struct Node {
-    elem: u32,
-    next: Link,
+pub struct Node<T> {
+    elem: T,
+    next: Link<T>,
 }
 
-impl List {
+impl<T> List<T> {
     pub fn new() -> Self {
         List { head: Link::Empty }
     }
@@ -34,8 +34,8 @@ impl List {
  * is being produced) where the mutable reference needs to have a
  * dummy holder.
  */
-impl Stack for List {
-    fn push(self: &mut List, t: u32) {
+impl<T> Stack<T> for List<T> {
+    fn push(self: &mut List<T>, t: T) {
         // self is a mutable reference (borrowed value)
         let new_node = Node {
             elem: t,
@@ -49,7 +49,7 @@ impl Stack for List {
         // contains in it the old self.head)
         self.head = Link::More(Box::new(new_node));
     }
-    fn pop(self: &mut List) -> Option<u32> {
+    fn pop(self: &mut List<T>) -> Option<T> {
         match mem::replace(&mut self.head, Link::Empty) {
             Link::Empty => None,
             Link::More(box_node) => {
@@ -59,7 +59,7 @@ impl Stack for List {
             }
         }
     }
-    fn is_empty(self: &List) -> bool {
+    fn is_empty(self: &List<T>) -> bool {
         match self.head {
             Link::Empty => true,
             _ => false,
@@ -83,7 +83,7 @@ impl ArrayStack {
     }
 }
 
-impl Stack for ArrayStack {
+impl Stack<u32> for ArrayStack {
     fn push(&mut self, ele: u32) {
         self.s[self.n] = Some(ele);
         self.n = self.n + 1;
@@ -122,7 +122,7 @@ mod tests {
     }
     #[test]
     fn list_stack() {
-        let mut list_stack = List::new();
+        let mut list_stack = List::<u32>::new();
         test_push_pop(&mut list_stack);
     }
     #[test]
