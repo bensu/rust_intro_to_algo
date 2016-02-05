@@ -31,12 +31,12 @@ pub fn insertion<T: Ord>(xs: &mut [T]) {
 pub fn shell<T :Ord>(xs: &mut [T]) {
     let l = xs.len();
     let mut h: usize = 1;
-    while (h < l/3) {
+    while h < l/3 {
         h = 3*h + 1;
     }
-    while (1 <= h) {
+    while 1 <= h {
         let mut i = h;
-        while (i < l) {
+        while i < l {
             let mut j = i;
             while (h <= j) && (xs[j] < xs[j-h]) {
                 xs.swap(j-h, j);
@@ -45,6 +45,14 @@ pub fn shell<T :Ord>(xs: &mut [T]) {
             i = i + h;
         }
         h = h/3;
+    }
+}
+
+pub fn shuffle<T>(xs: &mut [T]) {
+    for i in 0..xs.len() {
+        if i != 0 {
+            xs.swap(i, util::rand_upto(i));
+        }
     }
 }
 
