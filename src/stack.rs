@@ -1,3 +1,4 @@
+
 use std::mem;
 
 pub trait Stack<T> {
@@ -20,6 +21,7 @@ pub struct Node<T> {
     next: Link<T>,
 }
 
+#[allow(dead_code)]
 impl<T> List<T> {
     pub fn new() -> Self {
         List { head: Link::Empty }
@@ -69,12 +71,14 @@ impl<T> Stack<T> for List<T> {
 
 const N: usize = 10;
 
+#[allow(dead_code)]
 struct ArrayStack {
     n: usize,
     s: [Option<u32>; N],
 }
 
 impl ArrayStack {
+    #[allow(dead_code)]
     pub fn new() -> Self {
         ArrayStack {
             n: 0,
