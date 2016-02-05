@@ -5,8 +5,7 @@
  * the upper squares to be connected to one of the lower squares?
  */
 
-extern crate rand; // used for testing
-use self::rand::random;
+mod util;
 
 use union_find::*;
 
@@ -138,9 +137,9 @@ fn set_sym_white(grid: &mut Grid, sets: &mut Sets, coords: &Coords) {
 }
 
 fn non_white_coords(grid: &Grid) -> Coords {
-    let mut coords = Coords(random_upto(L), random_upto(L));
+    let mut coords = Coords(util::rand_upto(L), util::rand_upto(L));
     while is_white(get_color(grid, &coords)) {
-        coords = Coords(random_upto(L), random_upto(L));
+        coords = Coords(util::rand_upto(L), util::rand_upto(L));
     }
     coords
 }
@@ -174,14 +173,6 @@ fn percolates(grid: &Grid, sets: &mut Sets) -> bool {
 }
 
 type Sets = [Node; (L * L)];
-
-// Helper
-fn random_upto(n: usize) -> usize {
-    // Random usize between 0 and n
-    let out = random::<usize>() % n;
-    assert!(out < n);
-    out
-}
 
 fn sym() -> usize {
     /* We will build the sets and the grid simultaneously and stop
