@@ -28,12 +28,32 @@ pub fn insertion<T: Ord>(xs: &mut [T]) {
     }
 }
 
+pub fn shell<T :Ord>(xs: &mut [T]) {
+    let l = xs.len();
+    let mut h: usize = 1;
+    while (h < l/3) {
+        h = 3*h + 1;
+    }
+    while (1 <= h) {
+        let mut i = h;
+        while (i < l) {
+            let mut j = i;
+            while (h <= j) && (xs[j] < xs[j-h]) {
+                xs.swap(j-h, j);
+                j = j - h;
+            }
+            i = i + h;
+        }
+        h = h/3;
+    }
+}
+
 fn main() {
     // let mut a = [0; 10];
     // for i in 0..a.len() {
     //     a[i] = util::rand_upto(10);
     // }
     let a = &mut [2, 2, 8, 7, 3, 5, 3, 0, 7, 9];
-    insertion(a);
+    shell(a);
     assert_eq!(a, &[0, 2, 2, 3, 3, 5, 7, 7, 8, 9]);
 }
