@@ -11,6 +11,7 @@ pub struct List<T> {
     head: Link<T>,
 }
 
+// Should use Option
 pub enum Link<T> {
     Empty,
     More(Box<Node<T>>),
@@ -26,6 +27,15 @@ impl<T> List<T> {
     pub fn new() -> Self {
         List { head: Link::Empty }
     }
+}
+
+pub fn car<'a, T>(xs: &'a List<T>) -> Option<&'a T> {
+    let out;
+    match xs.head {
+        Link::Empty => { out = None; },
+        Link::More(ref boxed_node) => { out = Some(&boxed_node.elem); },
+    }
+    out
 }
 
 /* The patter used with mem::replace is useful whenever the current value of a
