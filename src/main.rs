@@ -49,6 +49,18 @@ impl Node {
             Some(key) => Some(key),
         }
     }
+    fn floor(&self, key: usize) -> Option<usize> {
+        if self.key == key {
+            Some(key)
+        } else if key < self.key {
+            self.left.floor(key)
+        } else {
+            match self.right.floor(key) {
+                None => Some(self.key),
+                Some(sub_tree_floor) => Some(sub_tree_floor),
+            }
+        }
+    }
 }
 
 struct BinaryTree {
@@ -105,6 +117,15 @@ impl BinaryTree {
             }
         }
     }
+    fn floor(&self, key: usize) -> Option<usize> {
+        match self.root {
+            None => None,
+            Some(ref box_node) => {
+                let ref node = *box_node;
+                node.floor(key)
+            }
+        }
+    }
 }
 
 fn main() {
@@ -115,6 +136,8 @@ fn main() {
         assert_eq!(Some(0), b.min_key());
         assert!(!b.is_empty());
         assert_eq!(Some(i), b.max_key());
+        assert_eq!(Some(i), b.floor(i));
+        assert_eq!(Some(i), b.floor(10));
     }
     for i in 0..10 {
         assert_eq!(Some(i as u32), b.get(i));
