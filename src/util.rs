@@ -9,3 +9,11 @@ pub fn rand_upto(n: usize) -> usize {
     assert!(out < n);
     out
 }
+
+pub fn rand_vec(n: usize) -> Vec<usize> {
+    let mut v = Vec::with_capacity(n);
+    for i in 0..n {
+        v.push(rand_upto(n));
+    }
+    v
+}

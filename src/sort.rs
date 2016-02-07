@@ -1,7 +1,5 @@
 // Selection sort
 
-extern crate rand;
-
 mod util;
 
 use std::fmt;
@@ -172,17 +170,10 @@ mod tests {
 
     const N: usize = 10;
 
-    fn rand_vec() -> Vec<usize> {
-        let mut v = Vec::with_capacity(N);
-        for i in 0..N {
-            v.push(util::rand_upto(N));
-        }
-        v
-    }
 
     #[test]
     fn step_test() {
-        let mut v = rand_vec();
+        let mut v = util::rand_vec(N);
         assert_eq!(vec![1,2,3,4,5,6], merge(&vec![1,4,5],&vec![2,3,6]));
         assert_eq!(vec![1,3,4,5,6,8], merge_sort(&vec![1,8,3,4,5,6]));
         assert!(is_sorted(&merge_sort(&v)));
@@ -240,7 +231,7 @@ mod tests {
     #[test]
     fn multi_test() {
         for i in 0..100 {
-            let mut v = rand_vec();
+            let mut v = util::rand_vec(N);
             quick_sort(&mut v);
             assert!(is_sorted(&v));
         }
