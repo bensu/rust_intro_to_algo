@@ -67,6 +67,11 @@ impl Node {
     fn count(&self) -> u32 {
         self.n
     }
+    fn iter_rec(&self, v: &mut Vec<usize>) {
+        v.push(self.key);
+        self.left.iter_rec(v);
+        self.right.iter_rec(v);
+    }
 }
 
 struct BinaryTree {
@@ -141,6 +146,28 @@ impl BinaryTree {
             }
         }
     }
+    fn iter_rec(&self, v: &mut Vec<usize>) {
+        if let Some(ref node) = self.root {
+            node.iter_rec(v);
+        }
+    }
+    fn iter(&self) -> BinaryTreeIter {
+        let mut v = Vec::with_capacity(self.count() as usize);
+        self.iter_rec(&mut v);
+        BinaryTreeIter { v: v }
+    }
+}
+
+struct BinaryTreeIter {
+    v: Vec<usize>,
+}
+
+impl Iterator for BinaryTreeIter {
+    type Item = usize;
+
+    fn next(&mut self) -> Option<usize> {
+        self.v.pop()
+    }
 }
 
 fn main() {
@@ -155,7 +182,7 @@ fn main() {
         assert_eq!(Some(i), b.floor(10));
         assert_eq!(i as u32, b.count() - 1);
     }
-    for i in 0..10 {
+    for i in b.iter() {
         assert_eq!(Some(i as u32), b.get(i));
     }
 }
