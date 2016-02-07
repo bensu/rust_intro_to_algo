@@ -68,9 +68,9 @@ impl Node {
         self.n
     }
     fn iter_rec(&self, v: &mut Vec<usize>) {
-        v.push(self.key);
         self.left.iter_rec(v);
         self.right.iter_rec(v);
+        v.push(self.key);
     }
 }
 
