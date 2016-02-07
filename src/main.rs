@@ -6,6 +6,7 @@ use std::mem;
 struct Node {
     key: usize,
     val: u32,
+    n: u32,
     left: BinaryTree,
     right: BinaryTree,
 }
@@ -15,6 +16,7 @@ impl Node {
         Node {
             key: key,
             val: val,
+            n: 1,
             left: BinaryTree::new(),
             right: BinaryTree::new(),
         }
@@ -27,6 +29,7 @@ impl Node {
         } else {
             self.right.put(key, val);
         }
+        self.n = 1 + self.left.count() + self.right.count();
     }
     fn get(&self, key: usize) -> Option<u32> {
         if self.key == key {
@@ -60,6 +63,9 @@ impl Node {
                 Some(sub_tree_floor) => Some(sub_tree_floor),
             }
         }
+    }
+    fn count(&self) -> u32 {
+        self.n
     }
 }
 
@@ -126,6 +132,15 @@ impl BinaryTree {
             }
         }
     }
+    fn count(&self) -> u32 {
+        match self.root {
+            None => 0,
+            Some(ref box_node) => {
+                let ref node = *box_node;
+                node.count()
+            }
+        }
+    }
 }
 
 fn main() {
@@ -138,6 +153,7 @@ fn main() {
         assert_eq!(Some(i), b.max_key());
         assert_eq!(Some(i), b.floor(i));
         assert_eq!(Some(i), b.floor(10));
+        assert_eq!(i as u32, b.count() - 1);
     }
     for i in 0..10 {
         assert_eq!(Some(i as u32), b.get(i));
