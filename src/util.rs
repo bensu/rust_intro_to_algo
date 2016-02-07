@@ -17,3 +17,12 @@ pub fn rand_vec(n: usize) -> Vec<usize> {
     }
     v
 }
+
+pub fn is_sorted<T: Ord>(a: &[T]) -> bool {
+    for i in 0..(a.len() - 1) {
+        if a[i] > a[i+1] {
+            return false;
+        }
+    }
+    true
+}

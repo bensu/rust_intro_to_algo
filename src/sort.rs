@@ -58,15 +58,6 @@ pub fn shuffle<T>(xs: &mut [T]) {
 
 // Merge Sort
 
-fn is_sorted<T: Ord>(a: &[T]) -> bool {
-    for i in 0..(a.len() - 1) {
-        if a[i] > a[i+1] {
-            return false;
-        }
-    }
-    true
-}
-
 /// Copies a elements from a point into outs ends
 fn append_from<T: Copy>(a: &[T], from: usize, out: &mut Vec<T>) {
     assert!(from < a.len());
@@ -78,8 +69,8 @@ fn append_from<T: Copy>(a: &[T], from: usize, out: &mut Vec<T>) {
 
 /// Merges to already sorted slices into a sorted vector
 fn merge<T: Ord + Copy + fmt::Debug>(a: &[T], b: &[T]) -> Vec<T> {
-    assert!(is_sorted(a));
-    assert!(is_sorted(b));
+    assert!(util::is_sorted(a));
+    assert!(util::is_sorted(b));
     let na = a.len();
     let nb = b.len();
     let mut out = Vec::with_capacity(na + nb);
@@ -104,7 +95,7 @@ fn merge<T: Ord + Copy + fmt::Debug>(a: &[T], b: &[T]) -> Vec<T> {
             }
         }
     }
-    assert!(is_sorted(&out));
+    assert!(util::is_sorted(&out));
     out
 }
 
@@ -176,7 +167,7 @@ mod tests {
         let mut v = util::rand_vec(N);
         assert_eq!(vec![1,2,3,4,5,6], merge(&vec![1,4,5],&vec![2,3,6]));
         assert_eq!(vec![1,3,4,5,6,8], merge_sort(&vec![1,8,3,4,5,6]));
-        assert!(is_sorted(&merge_sort(&v)));
+        assert!(util::is_sorted(&merge_sort(&v)));
         let mut u = vec![1,3,5,2,4,6];
         let n = u.len();
         partition(&mut u, 0, n - 1);
@@ -186,7 +177,7 @@ mod tests {
         partition(&mut u, 2, n - 1);
         assert_eq!(vec![1, 2, 3, 5, 4, 6], u);
         partition(&mut u, 3, n - 1);
-        assert!(is_sorted(&u));
+        assert!(util::is_sorted(&u));
     }
     #[test]
     fn second_step_test() {
@@ -199,11 +190,11 @@ mod tests {
         partition(&mut v, 2, n - 1);
         assert_eq!(v, vec![0, 1, 3, 4, 4, 1, 2, 4, 5, 5]);
         partition(&mut v, 2, 6);
-        assert!(is_sorted(&v));
+        assert!(util::is_sorted(&v));
         // Test the whole thing
         let mut v = vec![1, 3, 4, 4, 4, 5, 5, 0, 2, 1];
         quick_sort(&mut v);
-        assert!(is_sorted(&v));
+        assert!(util::is_sorted(&v));
     }
 
 
@@ -220,11 +211,11 @@ mod tests {
         assert_eq!(3, partition(&mut v, 1, 6));
         assert_eq!(v, vec![0, 3, 1, 4, 5, 5, 7, 7, 8, 9]);
         assert_eq!(2, partition(&mut v, 1, 2));
-        assert!(is_sorted(&v));
+        assert!(util::is_sorted(&v));
         // full
         let mut v = vec![9, 8, 5, 3, 1, 5, 7, 0, 4, 7];
         quick_sort(&mut v);
-        assert!(is_sorted(&v));
+        assert!(util::is_sorted(&v));
     }
 
 
@@ -233,7 +224,7 @@ mod tests {
         for i in 0..100 {
             let mut v = util::rand_vec(N);
             quick_sort(&mut v);
-            assert!(is_sorted(&v));
+            assert!(util::is_sorted(&v));
         }
     }
 

@@ -167,3 +167,43 @@ fn gen_test() {
         assert_eq!(*e, h.remove_max());
     }
 }
+
+fn heap_sort(v: Vec<u32>) -> Vec<u32> {
+    // Excesively copies code around. The idea is that it is in place!
+    let mut a = [0; N];
+    for i in 0..N-1 {
+        match v.get(i) {
+            None => panic!("Out of bounds"),
+            Some(val) => { a[i+1] = *val; },
+        }
+    }
+
+    let mut h = BinaryHeap { a: a, n: N-1 };
+    println!("{:?}", h);
+    // balance the heap
+    for i in 1..N {
+        h.sink(N - i);
+    }
+    println!("{:?}", h);
+    // sort by swapping the max down and clearing it
+    let mut i = h.n;
+    while 1 < i {
+        h.a.swap(1,i);
+        // forget the last item from the heap
+        h.n = h.n - 1;
+        h.sink(1);
+        i = i - 1;
+    }
+    // Excesively copies code around. The idea is that it is in place!
+    let mut out = Vec::with_capacity(N-1);
+    for e in h.a.iter().skip(1) {
+        out.push(*e);
+    }
+    out
+}
+
+fn gen_sort_test() {
+    let v = rand_vec(N-1);
+    let h = heap_sort(v);
+    assert!(util::is_sorted(&h));
+}
