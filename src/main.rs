@@ -2,6 +2,7 @@
 #![feature(box_patterns)]
 
 use std::mem;
+mod util;
 
 struct Node {
     key: usize,
@@ -72,37 +73,56 @@ impl Node {
         self.right.iter_rec(v);
         v.push(self.key);
     }
+    /// Finds first node to the left with empty left
+    fn pull_left(self) -> Node {
+        match self.left.root {
+            None => { self },
+            Some(box_left_node) => box_left_node.pull_left(),
+        }
+    }
     /// If the node itself should be completely deleted, it returns true
     /// for the parent to do it.
     fn delete(&mut self, key: usize) -> bool {
+        let mut out = false;
         if self.key == key {
             // we assume we shouldn't be deleted, and that we can pull
             // up one of our nodes
-            let mut out = false;
             match mem::replace(&mut self.left.root, None) {
                 None => match mem::replace(&mut self.right.root, None) {
+                    // we are the node to delete and there are no
+                    // nodes below to pull up communicate up that we
+                    // should be deleted
                     None => {
-                        // we are the node to delete and there are no
-                        // nodes below to pull up
-                        // communicate up that we should be deleted
                         out = true;
                     }
                     Some(box_right_node) => {
-                        *self = *box_right_node; // pull up right node
+                        // pull up right node since it is alone
+                        *self = *box_right_node;
                     },
                 },
                 Some(box_left_node) => {
-                    *self = *box_left_node; // pull up left node
+                    match mem::replace(&mut self.right.root, None) {
+                        None => {
+                            // pull up left node, since it is alone
+                            *self = *box_left_node;
+                        },
+                        Some(right_node) => {
+                            // both nodes are present
+                            *self = Node {
+                                left: BinaryTree { root: Some(box_left_node) },
+                                .. right_node.pull_left()
+                            };
+                        },
+                    }
                 },
             }
-            out
         } else if key < self.key {
             self.left.delete(key);
-            false
         } else {
             self.right.delete(key);
-            false
         }
+        self.n = 1 + self.right.count() + self.left.count();
+        out
     }
 }
 
@@ -227,10 +247,18 @@ fn main() {
     for i in b.iter() {
         assert_eq!(Some(i as u32), b.get(i));
     }
+    let v = util::rand_vec(10);
     for i in 0..10 {
-        b.put(i, i as u32);
-        assert_eq!(Some(i as u32), b.get(i));
+        b.put(i, v[i] as u32);
+        assert_eq!(Some(v[i] as u32), b.get(i));
+    }
+    let c = b.count();
+    b.delete(4);
+    assert_eq!(None, b.get(4));
+    assert_eq!(c - 1, b.count());
+    for i in b.iter() {
         b.delete(i);
         assert_eq!(None, b.get(i));
     }
+    assert_eq!(0, b.count());
 }
