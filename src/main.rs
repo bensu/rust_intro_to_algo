@@ -72,6 +72,38 @@ impl Node {
         self.right.iter_rec(v);
         v.push(self.key);
     }
+    /// If the node itself should be completely deleted, it returns true
+    /// for the parent to do it.
+    fn delete(&mut self, key: usize) -> bool {
+        if self.key == key {
+            // we assume we shouldn't be deleted, and that we can pull
+            // up one of our nodes
+            let mut out = false;
+            match mem::replace(&mut self.left.root, None) {
+                None => match mem::replace(&mut self.right.root, None) {
+                    None => {
+                        // we are the node to delete and there are no
+                        // nodes below to pull up
+                        // communicate up that we should be deleted
+                        out = true;
+                    }
+                    Some(box_right_node) => {
+                        *self = *box_right_node; // pull up right node
+                    },
+                },
+                Some(box_left_node) => {
+                    *self = *box_left_node; // pull up left node
+                },
+            }
+            out
+        } else if key < self.key {
+            self.left.delete(key);
+            false
+        } else {
+            self.right.delete(key);
+            false
+        }
+    }
 }
 
 struct BinaryTree {
@@ -156,6 +188,16 @@ impl BinaryTree {
         self.iter_rec(&mut v);
         BinaryTreeIter { v: v }
     }
+    fn delete(&mut self, key: usize) {
+        match mem::replace(&mut self.root, None) {
+            None => (), // nothing should be deleted
+            Some(mut box_node) => {
+                if !box_node.delete(key) {
+                    self.root = Some(box_node); // restore what was deleted
+                }
+            }
+        }
+    }
 }
 
 struct BinaryTreeIter {
@@ -184,5 +226,11 @@ fn main() {
     }
     for i in b.iter() {
         assert_eq!(Some(i as u32), b.get(i));
+    }
+    for i in 0..10 {
+        b.put(i, i as u32);
+        assert_eq!(Some(i as u32), b.get(i));
+        b.delete(i);
+        assert_eq!(None, b.get(i));
     }
 }
